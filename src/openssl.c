@@ -2718,28 +2718,29 @@ static int pk_encrypt(lua_State *L) {
 
 	ctx = EVP_PKEY_CTX_new(key, NULL); /* use default OpenSSL RSA */
 	if (!ctx)
-		return luaL_error(L, "could not create an encryption context")
+		return luaL_error(L, "could not create an encryption context");
 	if (EVP_PKEY_encrypt_init(ctx) <= 0)
-		return luaL_error(L, "could not initialize encryption context")
-	if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSP_OAEP_PADDING0 <= 0)
-		return luaL_error(L, "could not set RSA padding")
+		return luaL_error(L, "could not initialize encryption context");
+	if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING) <= 0)
+		return luaL_error(L, "could not set RSA padding");
 
 	size_t inlen;
-	const char *in =lua_tolstring(L, 2, &inlen);
-
-	if (EVP_PKEY_encrypt(ctx, NULL, &outlen, in inlen) <= 0)
-		return luaL_error(L, "could not determine encrypted length")
-
+	const unsigned char *in =
+		(const unsigned char *) lua_tolstring(L, 2, &inlen);
 	size_t outlen;
-	char *out = malloc(outlen);
+
+	if (EVP_PKEY_encrypt(ctx, NULL, &outlen, in, inlen) <= 0)
+		return luaL_error(L, "could not determine encrypted length");
+
+	unsigned char *out = malloc(outlen);
 
 	if (!out)
-		return luaL_error(L, "could not allocate memory for encryption")
+		return luaL_error(L, "could not allocate memory for encryption");
 
-	if (EVP_PKEY_enctrypt(ctx, out, &outlen, in, inlen) <= 0)
-		return luaL_error(L, "could not encrypt the plaintext")
+	if (EVP_PKEY_encrypt(ctx, out, &outlen, in, inlen) <= 0)
+		return luaL_error(L, "could not encrypt the plaintext");
 
-	lua_pushlstring(L, out, outlen);
+	lua_pushlstring(L, (char *) out, outlen);
 
 	free(out);
 
@@ -2754,28 +2755,29 @@ static int pk_decrypt(lua_State *L) {
 
 	ctx = EVP_PKEY_CTX_new(key, NULL); /* use default OpenSSL RSA */
 	if (!ctx)
-		return luaL_error(L, "could not create an decryption context")
+		return luaL_error(L, "could not create an decryption context");
 	if (EVP_PKEY_decrypt_init(ctx) <= 0)
-		return luaL_error(L, "could not initialize decryption context")
-	if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSP_OAEP_PADDING0 <= 0)
-		return luaL_error(L, "could not set RSA padding")
+		return luaL_error(L, "could not initialize decryption context");
+	if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING) <= 0)
+		return luaL_error(L, "could not set RSA padding");
 
 	size_t inlen;
-	const char *in =lua_tolstring(L, 2, &inlen);
-
-	if (EVP_PKEY_decrypt(ctx, NULL, &outlen, in inlen) <= 0)
-		return luaL_error(L, "could not determine decrypted length")
-
+	const unsigned char *in =
+		(const unsigned char *) lua_tolstring(L, 2, &inlen);
 	size_t outlen;
-	char *out = malloc(outlen);
+
+	if (EVP_PKEY_decrypt(ctx, NULL, &outlen, in, inlen) <= 0)
+		return luaL_error(L, "could not determine decrypted length");
+
+	unsigned char *out = malloc(outlen);
 
 	if (!out)
-		return luaL_error(L, "could not allocate memory for decryption")
+		return luaL_error(L, "could not allocate memory for decryption");
 
-	if (EVP_PKEY_dectrypt(ctx, out, &outlen, in, inlen) <= 0)
-		return luaL_error(L, "could not decrypt the plaintext")
+	if (EVP_PKEY_decrypt(ctx, out, &outlen, in, inlen) <= 0)
+		return luaL_error(L, "could not decrypt the plaintext");
 
-	lua_pushlstring(L, out, outlen);
+	lua_pushlstring(L, (char *) out, outlen);
 
 	free(out);
 
@@ -3464,6 +3466,8 @@ static const auxL_Reg pk_methods[] = {
 	{ "type",          &pk_type },
 	{ "setPublicKey",  &pk_setPublicKey },
 	{ "setPrivateKey", &pk_setPrivateKey },
+	{ "encrypt",       &pk_encrypt },
+	{ "decrypt",       &pk_decrypt },
 	{ "sign",          &pk_sign },
 	{ "verify",        &pk_verify },
 	{ "toPEM",         &pk_toPEM },
