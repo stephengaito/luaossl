@@ -2711,6 +2711,77 @@ static int pk_setPrivateKey(lua_State *L) {
 	return 1;
 } /* pk_setPrivateKey() */
 
+static int pk_encrypt(lua_State *L) {
+	EVP_PKEY *key = checksimple(L, 1, PKEY_CLASS);
+
+	EVP_PKEY_CTX *ctx;
+
+	ctx = EVP_PKEY_CTX_new(key, NULL); /* use default OpenSSL RSA */
+	if (!ctx)
+		return luaL_error(L, "could not create an encryption context")
+	if (EVP_PKEY_encrypt_init(ctx) <= 0)
+		return luaL_error(L, "could not initialize encryption context")
+	if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSP_OAEP_PADDING0 <= 0)
+		return luaL_error(L, "could not set RSA padding")
+
+	size_t inlen;
+	const char *in =lua_tolstring(L, 2, &inlen);
+
+	if (EVP_PKEY_encrypt(ctx, NULL, &outlen, in inlen) <= 0)
+		return luaL_error(L, "could not determine encrypted length")
+
+	size_t outlen;
+	char *out = malloc(outlen);
+
+	if (!out)
+		return luaL_error(L, "could not allocate memory for encryption")
+
+	if (EVP_PKEY_enctrypt(ctx, out, &outlen, in, inlen) <= 0)
+		return luaL_error(L, "could not encrypt the plaintext")
+
+	lua_pushlstring(L, out, outlen);
+
+	free(out);
+
+	return 1;
+} /* pk_encrypt() */
+
+
+static int pk_decrypt(lua_State *L) {
+	EVP_PKEY *key = checksimple(L, 1, PKEY_CLASS);
+
+	EVP_PKEY_CTX *ctx;
+
+	ctx = EVP_PKEY_CTX_new(key, NULL); /* use default OpenSSL RSA */
+	if (!ctx)
+		return luaL_error(L, "could not create an decryption context")
+	if (EVP_PKEY_decrypt_init(ctx) <= 0)
+		return luaL_error(L, "could not initialize decryption context")
+	if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSP_OAEP_PADDING0 <= 0)
+		return luaL_error(L, "could not set RSA padding")
+
+	size_t inlen;
+	const char *in =lua_tolstring(L, 2, &inlen);
+
+	if (EVP_PKEY_decrypt(ctx, NULL, &outlen, in inlen) <= 0)
+		return luaL_error(L, "could not determine decrypted length")
+
+	size_t outlen;
+	char *out = malloc(outlen);
+
+	if (!out)
+		return luaL_error(L, "could not allocate memory for decryption")
+
+	if (EVP_PKEY_dectrypt(ctx, out, &outlen, in, inlen) <= 0)
+		return luaL_error(L, "could not decrypt the plaintext")
+
+	lua_pushlstring(L, out, outlen);
+
+	free(out);
+
+	return 1;
+} /* pk_decrypt() */
+
 
 static int pk_sign(lua_State *L) {
 	EVP_PKEY *key = checksimple(L, 1, PKEY_CLASS);
