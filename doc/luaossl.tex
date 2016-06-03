@@ -304,6 +304,18 @@ Set the public key component to that described by the PEM- or DER-encoded public
 
 Set the private key component to that described by the PEM encoded private key in $string$. $format$ is as described in \fn{openssl.pkey.new}.
 
+\subsubsection[\fn{pkey:encrypt}]{\fn{pkey:encrypt($string$)}}
+
+Encrypt the plain text string. Note that pkey:encrypt only works for RSA public keys.
+
+Returns the encrypted text as a lua byte string on success, and throws an error otherwise.
+
+\subsubsection[\fn{pkey:decrypt}]{\fn{pkey:decrypt($string$)}}
+
+Decrypt the encrypted lua byte string. Note that pkey:decrypt only works for RSA private keys.
+
+Returns the decrypted text as a lua string on success, and throws an error otherwise.
+
 \subsubsection[\fn{pkey:sign}]{\fn{pkey:sign($digest$)}}
 
 Sign data which has been consumed by the specified \module{openssl.digest} $digest$. Digests and keys are not all interchangeable. For example, an elliptic curve key requires a digest of type ``ecdsa-with-SHA1'', while DSA requires ``dss1''. OpenSSL supports more varied digests for RSA.
