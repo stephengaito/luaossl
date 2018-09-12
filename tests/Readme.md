@@ -1,5 +1,14 @@
 # PKey:encrypt and PKey:decrypt seg-fault analysis
 
+This could be related to the following issue [SIGSEGV on pk_decrypt() 
+number 98](https://github.com/wahern/luaossl/issues/98) In this case the 
+was identified as a construction of a public key *with not corresponding 
+private key* (which does happen in my tests). A work around was to [call 
+setParameters](https://github.com/wahern/luaossl/issues/98#issuecomment-326804833).
+
+I found a simple call to toPEM *just after creating the key* cleared the 
+problems. (See below)
+
 ### Segmentation Fault
 
 There is a segmentation fault which seems to result from lua-ossl's 
